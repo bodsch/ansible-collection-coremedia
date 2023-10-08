@@ -1,0 +1,87 @@
+---
+
+prometheus_config_defaults_allowlist:
+  content-management-server:
+    - "Tomcat:type=ThreadPool,name=*ajp-bio-*"
+    - "Catalina:name=tomcatThreadPool,type=Executor"
+    - "com.coremedia:type=Store,*"
+    - "com.coremedia:type=Server,*"
+    - "com.coremedia:type=Statistics,*"
+  master-live-server:
+    - "Tomcat:type=ThreadPool,name=*ajp-bio-*"
+    - "Catalina:name=tomcatThreadPool,type=Executor"
+    - "com.coremedia:type=Store,*"
+    - "com.coremedia:type=Server,*"
+    - "com.coremedia:type=Statistics,*"
+  replication-live-server:
+    - "Tomcat:type=ThreadPool,name=*ajp-bio-*"
+    - "Catalina:name=tomcatThreadPool,type=Executor"
+    - "com.coremedia:type=Store,*"
+    - "com.coremedia:type=Replicator,*"
+    - "com.coremedia:type=Server,*"
+    - "com.coremedia:type=Statistics,*"
+  workflow-server:
+    - "Tomcat:type=ThreadPool,name=*ajp-bio-*"
+    - "Catalina:name=tomcatThreadPool,type=Executor"
+    - 'com.coremedia:type=CapConnection,*'
+    - "com.coremedia:type=Server,*"
+  content-feeder:
+    - "Tomcat:type=ThreadPool,name=*ajp-bio-*"
+    - "Catalina:name=tomcatThreadPool,type=Executor"
+    - 'com.coremedia:type=CapConnection,*'
+    - "com.coremedia:type=Store,*"
+    - "com.coremedia:type=Feeder,*"
+  caefeeder-live:
+    - "Tomcat:type=ThreadPool,name=*ajp-bio-*"
+    - "Catalina:name=tomcatThreadPool,type=Executor"
+    - "com.coremedia:type=CapConnection,*"
+    - 'com.coremedia:type=Feeder,*'
+    - "com.coremedia:type=Store,*"
+    - "com.coremedia:type=Health,*"
+    - "com.coremedia:type=ProactiveEngine,*"
+  caefeeder-preview:
+    - "Tomcat:type=ThreadPool,name=*ajp-bio-*"
+    - "Catalina:name=tomcatThreadPool,type=Executor"
+    - "com.coremedia:type=CapConnection,*"
+    - 'com.coremedia:type=Feeder,*'
+    - "com.coremedia:type=Store,*"
+    - "com.coremedia:type=Health,*"
+    - "com.coremedia:type=ProactiveEngine,*"
+  user-changes:
+    - "Tomcat:type=ThreadPool,name=*ajp-bio-*"
+    - "Catalina:name=tomcatThreadPool,type=Executor"
+    - "com.coremedia:type=CapConnection,*"
+    - "com.coremedia:type=Store,*"
+  studio-server:
+    - "Tomcat:type=ThreadPool,name=*ajp-bio-*"
+    - "Catalina:name=tomcatThreadPool,type=Executor"
+    - "com.coremedia:type=Cache.Classes,*"
+  cae-preview:
+    - "Tomcat:type=ThreadPool,name=*ajp-bio-*"
+    - "Catalina:name=tomcatThreadPool,type=Executor"
+    - "com.coremedia:type=Cache.Classes,*"
+    - "com.coremedia:type=CapConnection,*"
+    - 'com.coremedia:type=Feeder,*'
+    - "com.coremedia:type=Store,*"
+  cae-live:
+    - "Tomcat:type=ThreadPool,name=*ajp-bio-*"
+    - "Catalina:name=tomcatThreadPool,type=Executor"
+    - "com.coremedia:type=Cache.Classes,*"
+    - "com.coremedia:type=CapConnection,*"
+    - "com.coremedia:type=Store,*"
+    - "com.coremedia:type=Health,*"
+  cae-live-01:
+    - "Tomcat:type=ThreadPool,name=*ajp-bio-*"
+    - "Catalina:name=tomcatThreadPool,type=Executor"
+    - "com.coremedia:type=Cache.Classes,*"
+    - "com.coremedia:type=CapConnection,*"
+    - "com.coremedia:type=Store,*"
+    - "com.coremedia:type=Health,*"
+  cae-live-02:
+    - "Tomcat:type=ThreadPool,name=*ajp-bio-*"
+    - "Catalina:name=tomcatThreadPool,type=Executor"
+    - "com.coremedia:type=Cache.Classes,*"
+    - "com.coremedia:type=CapConnection,*"
+    - "com.coremedia:type=Store,*"
+
+prometheus_config_defaults_blocklist: {}

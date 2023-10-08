@@ -1,0 +1,41 @@
+---
+
+namespace: bodsch
+name: coremedia
+
+version: 0.0.1
+
+readme: README.md
+
+authors:
+  - Bodo Schulz <bodo@boone-schulz.de>
+
+description: A collection of Ansible roles for the CoreMedia universe.
+
+license:
+  - Apache-2.0
+
+license_file: ''
+
+tags:
+  - coremedia
+
+dependencies:
+  bodsch.core: ">=1.1.2"
+  bodsch.scm: "*"
+
+repository: https://github.com/bodsch/ansible-collection-coremedia
+documentation: https://github.com/bodsch/ansible-collection-coremedia/README.md
+homepage: https://github.com/bodsch/ansible-collection-coremedia
+issues: https://github.com/bodsch/ansible-collection-coremedia/issues
+
+build_ignore:
+  - "galaxy.yml"
+  - "*.pyc"
+  - "*.retry"
+  - ".ansible-lint"
+  - ".editorconfig"
+  - ".flake8"
+  - ".gitignore"
+  - ".yamllint"
+  - ".github"

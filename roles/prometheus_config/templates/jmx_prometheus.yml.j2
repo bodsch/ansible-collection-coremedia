@@ -1,0 +1,32 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+---
+# {{ ansible_managed }}
+{% set _allowlist = [] %}
+{% set _blocklist = [] %}
+{% if prometheus_config_allowlist[item] is defined and
+      prometheus_config_allowlist[item] | count > 0 %}
+  {% set _allowlist = prometheus_config_allowlist[item] %}
+{% endif %}
+{% if prometheus_config_blocklist[item] is defined and
+      prometheus_config_blocklist[item] | count > 0 %}
+  {% set _blocklist = prometheus_config_blocklist[item] %}
+{% endif %}
+
+startDelaySeconds: {{ prometheus_config_start_delay }}
+lowercaseOutputName: {{ prometheus_config_lowercase.output_name | bool | ternary('true', 'false') }}
+lowercaseOutputLabelNames: {{ prometheus_config_lowercase.output_label_names | bool | ternary('true', 'false') }}
+
+{% if _allowlist is defined and
+      _allowlist | count > 0 %}
+whitelistObjectNames:
+  {% for k in _allowlist %}
+  - "{{ k }}"
+  {% endfor %}
+{% endif %}
+{% if _blocklist is defined and
+      _blocklist | count > 0 %}
+blacklistObjectNames:
+  {% for k in _blocklist %}
+  - "{{ k }}"
+  {% endfor %}
+{% endif %}

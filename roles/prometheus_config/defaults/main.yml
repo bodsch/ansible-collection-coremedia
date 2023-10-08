@@ -1,0 +1,15 @@
+---
+
+prometheus_config_base_directory: /opt/container
+
+prometheus_config_owner: 1000
+prometheus_config_group: 1000
+
+prometheus_config_start_delay: 60
+
+prometheus_config_lowercase:
+  output_name: true
+  output_label_names: true
+
+prometheus_config_allowlist: {}
+prometheus_config_blocklist: {}

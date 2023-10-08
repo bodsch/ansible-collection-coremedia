@@ -1,0 +1,12 @@
+---
+
+- name: merge white and blocklist configurations between defaults and custom
+  ansible.builtin.set_fact:
+    prometheus_config_allowlist: "{{ prometheus_config_defaults_allowlist | combine(prometheus_config_allowlist, recursive=True) }}"
+    prometheus_config_blocklist: "{{ prometheus_config_defaults_blocklist | combine(prometheus_config_blocklist, recursive=True) }}"
+
+- name: list coremedia applications
+  ansible.builtin.debug:
+    msg: "{{ prometheus_config_allowlist | bodsch.coremedia.coremedia_applications }}"
+
+...

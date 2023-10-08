@@ -1,0 +1,27 @@
+---
+
+galaxy_info:
+  role_name: prometheus_config
+
+  description: A role for deploying CoreMedia Prometheus configurations
+
+  author: Bodo Schulz <bodo@boone-schulz.de>
+  license: Apache
+
+  min_ansible_version: "2.10"
+
+  platforms:
+    - name: Archlinux
+    - name: Debian
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+
+  galaxy_tags:
+    - coremedia
+    - prometheus
+    - monitoring
+
+dependencies: []
