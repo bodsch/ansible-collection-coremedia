@@ -1,0 +1,8 @@
+---
+
+coremedia_license_artifacts_rls:
+  - service: 'rls'
+    file: 'rls-license.zip'
+    destination: 'rls-license.zip'
+
+...

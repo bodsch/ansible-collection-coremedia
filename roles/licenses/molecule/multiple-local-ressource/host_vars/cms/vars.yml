@@ -1,0 +1,8 @@
+---
+
+coremedia_license_artifacts_cms:
+  - service: 'cms'
+    file: 'cms-license.zip'
+    destination: 'cms-license.zip'
+
+...

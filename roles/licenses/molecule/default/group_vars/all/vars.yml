@@ -1,0 +1,19 @@
+---
+
+# coremedia_license_version: "{{ lookup('env', 'CM_LICENSE_VERSION') | default('2110', true ) }}"
+# coremedia_license_server: "{{ lookup('env', 'CM_LICENSE_SERVER') | default('http://127.0.0.1/cm', true) }}"
+#
+# coremedia_license_url: "{{ coremedia_license_server }}/licenses/{{ coremedia_license_version }}"
+#
+# coremedia_license_artifacts:
+#   - service: 'mls'
+#     file: 'mls-license.zip'
+#     destination: 'mls-license.zip'
+#   - service: 'cms'
+#     file: 'cms-license.zip'
+#     destination: 'cms-license.zip'
+#   - service: 'rls'
+#     file: 'rls-license.zip'
+#     destination: 'rls-license.zip'
+
+...

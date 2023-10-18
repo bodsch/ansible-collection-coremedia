@@ -1,0 +1,19 @@
+---
+
+license_version: "{{ lookup('env', 'CM_LICENSE_VERSION') | default('2110', true ) }}"
+license_server: "{{ lookup('env', 'CM_LICENSE_SERVER') | default('http://127.0.0.1/cm', true) }}"
+
+license_url: "" # {{ license_server }}/licenses/{{ license_version }}"
+
+licenses_artifacts:
+  - service: 'mls'
+    file: 'mls-license.zip'
+    destination: 'mls-license.zip'
+  - service: 'cms'
+    file: 'cms-license.zip'
+    destination: 'cms-license.zip'
+  - service: 'rls'
+    file: 'rls-license.zip'
+    # destination: 'rls-license.zip'
+
+...

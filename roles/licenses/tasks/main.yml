@@ -1,0 +1,95 @@
+---
+
+- name: validate download & license information
+  block:
+    - name: validate download information
+      when:
+        - licenses_download.url is defined
+        - licenses_download.url | string | length == 0
+      run_once: true
+      delegate_to: localhost
+      ansible.builtin.debug:
+        msg: "No download URL has been configured!"
+
+    - name: validate license information
+      when:
+        - licenses_artifacts is defined
+      run_once: true
+      delegate_to: localhost
+      ansible.builtin.debug:
+        msg: "{{ 'Valid licence data are available.' if licenses_artifacts | bodsch.coremedia.validate_license_informations else 'No valid license data found!' }}"
+
+- name: create license directory
+  ansible.builtin.file:
+    path: "{{ licenses_directory }}"
+    state: directory
+    owner: "{{ licenses_user }}"
+    group: "{{ licenses_group }}"
+    mode: 0755
+
+- name: create local tmp directory
+  become: false
+  delegate_to: localhost
+  ansible.builtin.file:
+    path: "{{ licenses_local_tmp_directory }}"
+    state: directory
+    mode: 0750
+
+- name: download artifacts from license server {{ licenses_download.url }}
+  when:
+    - licenses_download.url is defined
+    - licenses_download.url | string | length > 0
+    - licenses_artifacts is defined
+    - licenses_artifacts | count > 0
+  block:
+    - name: download CoreMedia license files to ansible controller
+      become: false
+      run_once: true
+      delegate_to: localhost
+      ansible.builtin.get_url:
+        url: "{{ licenses_download.url }}/{{ item.file }}"
+        url_username: "{{ licenses_download.username | default(omit) }}"
+        url_password:  "{{ licenses_download.password | default(omit) }}"
+        dest: "{{ licenses_local_tmp_directory }}/{{ item.file }}"
+        validate_certs: "{{ licenses_validate_certs | bool }}"
+        mode: 0640
+      register: _download_license
+      until: _download_license is succeeded
+      retries: 5
+      delay: 5
+      check_mode: false
+      loop:
+        "{{ licenses_artifacts }}"
+      loop_control:
+        label: "{{ item.file }}"
+
+    - name: upload CoreMedia license files to {{ licenses_directory }}
+      ansible.builtin.copy:
+        src: "{{ licenses_local_tmp_directory }}/{{ item.file }}"
+        dest: "{{ licenses_directory }}/{{ item.destination | default(item.file) }}"
+        owner: "{{ licenses_user }}"
+        group: "{{ licenses_group }}"
+        mode: 0444
+      loop:
+        "{{ licenses_artifacts }}"
+      loop_control:
+        label: "{{ item.file }} -> {{ item.destination | default(item.file) }}"
+
+- name: upload local CoreMedia license files to {{ licenses_directory }}
+  ansible.builtin.copy:
+    src: "{{ item.file }}"
+    dest: "{{ licenses_directory }}/{{ item.destination | default(item.file) }}"
+    owner: "{{ licenses_user }}"
+    group: "{{ licenses_group }}"
+    mode: 0444
+  loop:
+    "{{ licenses_artifacts }}"
+  loop_control:
+    label: "{{ item.file }}"
+  when:
+    - licenses_download.url is defined
+    - licenses_download.url | string | length == 0
+    - licenses_artifacts is defined
+    - licenses_artifacts | count > 0
+    - licenses_directory is defined
+    - licenses_directory | string | length > 0

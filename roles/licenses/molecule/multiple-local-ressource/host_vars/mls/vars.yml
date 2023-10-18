@@ -1,0 +1,8 @@
+---
+
+coremedia_license_artifacts_mls:
+  - service: 'mls'
+    file: 'mls-license.zip'
+    destination: 'mls-license.zip'
+
+...

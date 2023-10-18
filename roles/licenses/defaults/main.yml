@@ -1,0 +1,20 @@
+---
+
+licenses_directory: '/opt/coremedia/licenses'
+
+licenses_download:
+  url: ""
+  username: ""
+  password: ""
+
+licenses_validate_certs: true
+
+licenses_artifacts: []
+#  - service: 'cms'
+#    file: 'cms.zip'
+#    destination: 'cms.zip'
+#  - { service: 'mls', file: 'mls.zip', destination: 'mls.zip' }
+#  - { service: 'rls', file: 'rls.zip', destination: 'rls.zip' }
+
+licenses_user: nobody
+licenses_group: "{{ 'nogroup' if ansible_os_family | lower == 'debian' else 'nobody' }}"

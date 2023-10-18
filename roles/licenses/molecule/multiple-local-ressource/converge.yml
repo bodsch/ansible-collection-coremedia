@@ -1,0 +1,15 @@
+---
+
+- hosts: cms,mls
+  any_errors_fatal: true
+  gather_facts: true
+
+  roles:
+    - role: ansible-coremedia-licenses
+
+- hosts: rls
+  any_errors_fatal: true
+  gather_facts: true
+
+  roles:
+    - role: ansible-coremedia-licenses

@@ -1,0 +1,6 @@
+---
+- hosts: all
+  any_errors_fatal: false
+
+  roles:
+    - role: bodsch.coremedia.licenses
