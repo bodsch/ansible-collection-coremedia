@@ -6,12 +6,11 @@ Documentation for the collection.
 
 | Role                                                                       | | Description |
 |:---------------------------------------------------------------------------| :---- | :---- |
-| [bodsch.coremedia.prometheus_config](./roles/prometheus_config/README.md)           |       |       |
-
+| [bodsch.coremedia.prometheus_config](./roles/prometheus_config/README.md)  |       |       |
+| [bodsch.coremedia.licenses](./roles/licenses/README.md)                    |       |       |
 
 ### planned
  - content-import
- - licenses
  - themes-import
  - management
  - rls-reset

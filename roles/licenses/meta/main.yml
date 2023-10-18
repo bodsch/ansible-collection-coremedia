@@ -2,15 +2,14 @@
 
 galaxy_info:
   role_name: licensess
-  namespace: tallence
+  namespace: bodsch
 
   author: Bodo Schulz <bodo@boone-schulz.de>
   description: A role for deploying CoreMedia License Files
 
-  company: "Tallence AG"
-  license: "own"
+  license: Apache
 
-  min_ansible_version: "2.10"
+  min_ansible_version: "2.9"
 
   platforms:
     - name: Debian
