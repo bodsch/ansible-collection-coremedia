@@ -1,0 +1,67 @@
+---
+
+- name: check for archive {{ content_source.url | basename }} on ansible controller
+  delegate_to: localhost
+  become: false
+  run_once: true
+  ansible.builtin.stat:
+    path: "{{ content_importer_local_tmp_directory }}/{{ content_source.url | basename }}"
+  register: _archive_local
+
+- name: define checksum for {{ content_source.url | basename }} on ansible controller
+  delegate_to: localhost
+  become: false
+  run_once: true
+  ansible.builtin.stat:
+    path: "{{ content_importer_local_tmp_directory }}/{{ content_source.url | basename }}"
+    get_md5: false
+    get_mime: false
+    get_attributes: false
+  register: _archive_checksum_local
+  when:
+    - _archive_local is defined
+    - _archive_local.stat is defined
+    - _archive_local.stat.exists | default('true')
+
+- name: check for archive {{ content_source.url | basename }} on destination
+  ansible.builtin.stat:
+    path: "{{ content_importer_remote_tmp_directory }}/{{ content_source.url | basename }}"
+  register: _archive_remote
+
+- name: define checksum for {{ content_source.url | basename }} on destination
+  ansible.builtin.stat:
+    path: "{{ content_importer_remote_tmp_directory }}/{{ content_source.url | basename }}"
+    get_md5: false
+    get_mime: false
+    get_attributes: false
+  register: _archive_checksum_remote
+  when:
+    - _archive_remote is defined
+    - _archive_remote.stat is defined
+    - _archive_remote.stat.exists | default('true')
+
+- name: set facts
+  ansible.builtin.set_fact:
+    content_importer_archive_checksum_local: "{{ _archive_checksum_local.stat.checksum | default('+') }}"
+    content_importer_archive_checksum_remote: "{{ _archive_checksum_remote.stat.checksum | default('-') }}"
+
+- name: transfer content archive to destination instance
+  tags:
+    - content_import
+  when:
+    - _archive_local.stat.exists | default('true') and
+      not _archive_remote.stat.exists | default('false') or
+      content_importer_archive_checksum_local != content_importer_archive_checksum_remote
+  block:
+    - name: propagate {{ content_source.url | basename }}
+      become: true
+      ansible.builtin.copy:
+        src: "{{ content_importer_local_tmp_directory }}/{{ content_source.url | basename }}"
+        dest: "{{ content_importer_remote_tmp_directory }}/"
+        mode: 0600
+
+    - name: extract {{ content_source.url | basename }}
+      ansible.builtin.unarchive:
+        src: "{{ content_importer_remote_tmp_directory }}/{{ content_source.url | basename }}"
+        dest: "/var/tmp/"
+        remote_src: true

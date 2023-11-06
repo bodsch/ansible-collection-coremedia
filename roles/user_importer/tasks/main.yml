@@ -1,0 +1,15 @@
+---
+
+- name: prepare
+  ansible.builtin.import_tasks: prepare.yml
+
+- name: download
+  ansible.builtin.import_tasks: download.yml
+
+- name: install
+  ansible.builtin.import_tasks: install.yml
+
+- name: import
+  ansible.builtin.import_tasks: import.yml
+
+...

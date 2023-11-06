@@ -1,0 +1,63 @@
+---
+
+- name: define delegate instance for download handling
+  ansible.builtin.set_fact:
+    content_importer_delegate_to: "{{ ansible_host }}"
+    content_importer_local_tmp_directory: "{{
+        lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
+        default('/var/cache/ansible/content_importer', true) }}"
+  when:
+    - content_importer_direct_download
+
+- name: create download directory
+  become: false
+  delegate_to: "{{ content_importer_delegate_to }}"
+  run_once: "{{ 'false' if content_importer_direct_download else 'true' }}"
+  ansible.builtin.file:
+    path: "{{ content_importer_local_tmp_directory }}"
+    state: directory
+    mode: 0750
+
+- name: detect the downloaded content_importer archive
+  become: false
+  delegate_to: "{{ content_importer_delegate_to }}"
+  run_once: "{{ 'false' if content_importer_direct_download else 'true' }}"
+  ansible.builtin.stat:
+    path: "{{ content_importer_local_tmp_directory }}/{{ content_source.url | basename }}"
+  register: stat_content_importer_archive
+
+- name: download
+  when:
+    - stat_content_importer_archive.stat is defined
+    - not stat_content_importer_archive.stat.exists | default('false')
+  block:
+    - name: download content_importer binary archive
+      become: false
+      delegate_to: "{{ content_importer_delegate_to }}"
+      run_once: "{{ 'false' if content_importer_direct_download else 'true' }}"
+      ansible.builtin.get_url:
+        url: "{{ content_source.url }}"
+        dest: "{{ content_importer_local_tmp_directory }}/{{ content_source.url | basename }}"
+        # checksum: "{{ __content_importer_checksum | default(omit) }}"
+        mode: 0660
+        username: "{{ content_source.username | default(omit) }}"
+        password: "{{ content_source.password | default(omit) }}"
+        validate_certs: "{{ content_source.validate_certs | default(omit) }}"
+      register: _download_archive
+      until: _download_archive is succeeded
+      retries: 5
+      delay: 2
+      check_mode: false
+
+  rescue:
+    - name: delete download directory
+      become: false
+      delegate_to: "{{ content_importer_delegate_to }}"
+      run_once: "{{ 'false' if content_importer_direct_download else 'true' }}"
+      ansible.builtin.file:
+        path: "{{ content_importer_local_tmp_directory }}"
+        state: absent
+
+    - name: exit with fail
+      ansible.builtin.fail:
+        msg: A serious error occurred when downloading the archive.

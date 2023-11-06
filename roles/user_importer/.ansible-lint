@@ -1,0 +1,9 @@
+---
+
+skip_list:
+  - name[casing]        # All names should start with an uppercase letter.
+
+warn_list:
+  - fqcn[action-core]   # Use FQCN for builtin module actions
+
+...

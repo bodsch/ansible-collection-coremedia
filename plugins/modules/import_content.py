@@ -15,7 +15,7 @@ from docker.types import Mount
 from pathlib import Path
 
 
-class CoremediaImportUsers():
+class CoremediaImportContent():
     """
     """
 
@@ -32,7 +32,7 @@ class CoremediaImportUsers():
         self.cms_password = module.params.get("cms_password")
         self.mls_ior = module.params.get("mls_ior")
 
-        self.checksum_directory = f"{Path.home()}/.ansible/cache/coremedia/import_users"
+        self.checksum_directory = f"{Path.home()}/.ansible/cache/coremedia/import_content"
 
     def run(self):
         """
@@ -42,30 +42,32 @@ class CoremediaImportUsers():
                 failed=True,
                 msg="No Container Image defined."
             )
-
-        self.checksum = Checksum(self.module)
-        create_directory(directory=self.checksum_directory, mode="0750")
-
-        old_checksum = None
-        new_checksum = None
-
-        old_filename = os.path.join(self.checksum_directory, "users.xml")
-        new_filename = os.path.join(self.data_directory, "users.xml")
-
-        if os.path.isfile(old_filename):
-            old_checksum = self.checksum.checksum_from_file(old_filename)
-
-        if os.path.isfile(new_filename):
-            new_checksum = self.checksum.checksum_from_file(new_filename)
-
-        changed = not (new_checksum == old_checksum)
-        # new_file = False
-        msg = "The users.xml has not been changed"
-
-        self.module.log(msg=f" - old_filename {old_filename}  {old_checksum}")
-        self.module.log(msg=f" - new_filename {new_filename}  {new_checksum}")
-        self.module.log(msg=f" - changed {changed}")
+        changed = True
+        # self.checksum = Checksum(self.module)
+        # create_directory(directory=self.checksum_directory, mode="0750")
+        #
+        # old_checksum = None
+        # new_checksum = None
+        #
+        # old_filename = os.path.join(self.checksum_directory, "users.xml")
+        # new_filename = os.path.join(self.data_directory, "users.xml")
+        #
+        # if os.path.isfile(old_filename):
+        #     old_checksum = self.checksum.checksum_from_file(old_filename)
+        #
+        # if os.path.isfile(new_filename):
+        #     new_checksum = self.checksum.checksum_from_file(new_filename)
+        #
+        # changed = not (new_checksum == old_checksum)
+        # # new_file = False
+        # msg = "The users.xml has not been changed"
+        #
+        # self.module.log(msg=f" - old_filename {old_filename}  {old_checksum}")
+        # self.module.log(msg=f" - new_filename {new_filename}  {new_checksum}")
+        # self.module.log(msg=f" - changed {changed}")
         # self.module.log(msg=f" - vhost {vhost}")
+
+        self.module.log(msg=f" - data_directory:  {self.data_directory}")
 
         if changed:
             self.container = Container(self.module)
@@ -82,7 +84,7 @@ class CoremediaImportUsers():
                 _failed = True
                 _changed = False
 
-                status_code, status_msg, msg = self.import_users()
+                status_code, status_msg, msg = self.import_content()
                 self.module.log(msg=f" status_code: {status_code}")
                 self.module.log(msg=f" status_msg : {status_msg}")
                 self.module.log(msg=f" msg        : {msg}")
@@ -95,7 +97,7 @@ class CoremediaImportUsers():
                 else:
                     _failed = True
 
-                shutil.copy(new_filename, old_filename)
+                # shutil.copy(new_filename, old_filename)
 
                 return dict(
                     failed=_failed,
@@ -117,7 +119,7 @@ class CoremediaImportUsers():
                 msg=msg
             )
 
-    def import_users(self):
+    def import_content(self):
 
         env = dict(
             CMS_IOR_URL=self.cms_ior,
@@ -125,12 +127,13 @@ class CoremediaImportUsers():
         )
 
         cmd = [
-            "restoreusers",
+            "serverimport",
             "--user", self.cms_username,
             "--password", self.cms_password,
+            "--recursive",
+            "--no-validate-xml",
             "--url", self.cms_ior,
-            "--file",
-            os.path.join("/run/host", "users.xml"),
+            os.path.join("/run/host"),
         ]
 
         # mount points
@@ -145,11 +148,15 @@ class CoremediaImportUsers():
 
         _output, _status_code, _status_msg = self.container.run_container(
             container_image=self.container_image,
-            name="restoreusers",
+            name="serverimport",
             mounts=mounts,
             cmd=cmd,
             env=env
         )
+
+        self.module.log(msg=f"  - _output      : {_output}")
+        self.module.log(msg=f"  - _status_code : {_status_code}")
+        self.module.log(msg=f"  - _status_msg  : {_status_msg}")
 
         msg = self._parse_container_output(_output)
 
@@ -157,14 +164,13 @@ class CoremediaImportUsers():
 
     def _parse_container_output(self, output):
         """
-            Import /run/host/users.xml ...
-            Done.
         """
         result = []
 
         pos = [
-            "Import",
-            "Done",
+            "Collecting meta data from ",
+            "Importing from ",
+            "Done"
         ]
 
         for line in output:
@@ -176,7 +182,6 @@ class CoremediaImportUsers():
 
 def main():
     """
-    :return:
     """
     argument_spec = dict(
         state=dict(
@@ -210,13 +215,12 @@ def main():
         )
     )
 
-
     module = AnsibleModule(
         argument_spec=argument_spec,
         supports_check_mode=True,
     )
 
-    p = CoremediaImportUsers(module)
+    p = CoremediaImportContent(module)
     result = p.run()
 
     module.log(msg="= result: {}".format(result))
@@ -225,5 +229,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-# {{ cms_tools_dir }}/bin/cm restoreusers --user admin --password admin --file {{ item }}

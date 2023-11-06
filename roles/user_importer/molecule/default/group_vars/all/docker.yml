@@ -1,0 +1,41 @@
+---
+
+docker_compose:
+  install: false
+
+docker_client_config:
+  - username: root
+    enabled: true
+    owner: root
+    group: root
+    ## the location we should push client configuration
+    location: "/root/.docker/config.json"
+    formats:
+      ps:
+        - ".ID"
+        - ".Names"
+        - ".Status"
+        - ".RunningFor"
+        - ".Ports"
+      images:
+        - ".ID"
+        - ".Size"
+        - ".Repository"
+        - ".Tag"
+        - ".CreatedAt"
+
+docker_config:
+  data_root: "/opt/docker"
+  insecure_registries:
+    - registry.cm.local
+  experimental: true
+  metrics_addr: "127.0.0.1:9323"
+  hosts:
+    - "unix:///var/run/docker.sock"
+    - "tcp://0.0.0.0:2376"
+  log_opts:
+    # no-file: "false"
+    max-size: "10m"
+    max-file: "3"
+
+...
