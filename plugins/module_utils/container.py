@@ -189,7 +189,7 @@ class Container():
 
         return output, _status_code, _status_msg
 
-    def write_environments_file(self):
+    def write_properties_file(self):
         """
             sql.store.driver = org.postgresql.Driver
             sql.store.url = jdbc:postgresql://bce-cmpdb-sv04.tik.intern:5432/replication_live_server
@@ -251,7 +251,9 @@ class Container():
                     container.attrs['Id']: container.attrs
                 })
 
+            # self.module.log(msg=f"  type {type(containers)}")
             return containers
+
         except Exception as e:
             self.module.log(msg=f"ERROR : str({e})")
             pass
@@ -263,16 +265,18 @@ class Container():
         """
         self.module.log(f"Container::container({container_id})")
 
+        result = None
+
         if container_id and container_id.isalnum():
             try:
                 for container in self.docker_client.containers.list(all=True, filters={"id": container_id}):
-                    return container.attrs
+                    result = container.attrs
 
             except Exception as e:
                 self.module.log(msg=f"ERROR : str({e})")
                 pass
 
-        return None
+        return result
 
     def container_search(self, name):
         """
@@ -282,25 +286,77 @@ class Container():
         if all_containers:
             """
             """
+            # self.module.log(msg=f"  type {type(all_containers)}")
+
             if isinstance(all_containers, dict):
                 result = {k: v for k, v in all_containers.items() if v.get('Name', '')[1:] == name}
+                # self.module.log(msg=f"  result {result}")
+
                 if result:
                     container_id = list(result.keys())[0]
-                    self.module.log(msg=f"  - {container_id}")
+                    # self.module.log(msg=f"  - found container id: {container_id}")
                     return self.container(container_id)
 
         return None
 
-    def container_restart(self, name):
+    def container_stop(self, name):
         """
-        :return:
+            :return:
         """
-        self.module.log(f"Container::container_restart({name})")
+        self.module.log(f"Container::container_stop({name})")
 
-        container = self.container_search(self.name)
+        container = self.container_search(name)
 
         if container:
             container_id = container.get("Id", None)
+
+            self.module.log(f" = stop container with id {container_id}")
+
+            if container_id:
+                for container in self.docker_client.containers.list(all=True, filters={"id": container_id}):
+                    container.stop()
+
+                return True, 'stop command completed successfully.'
+            else:
+                return False, "unknow container id."
+        else:
+            return False, f"no running container {name} found."
+
+    def container_start(self, name):
+        """
+            :return:
+        """
+        self.module.log(f"Container::container_start({name})")
+
+        container = self.container_search(name)
+
+        if container:
+            container_id = container.get("Id", None)
+
+            self.module.log(f" = start container with id {container_id}")
+
+            if container_id:
+                for container in self.docker_client.containers.list(all=True, filters={"id": container_id}):
+                    container.start()
+
+                return True, 'start command completed successfully.'
+            else:
+                return False, "unknow container id."
+        else:
+            return False, f"no running container {name} found."
+
+    def container_restart(self, name):
+        """
+            :return:
+        """
+        self.module.log(f"Container::container_restart({name})")
+
+        container = self.container_search(name)
+
+        if container:
+            container_id = container.get("Id", None)
+
+            self.module.log(f" = restart conatiner with id {container_id}")
 
             if container_id:
                 for container in self.docker_client.containers.list(all=True, filters={"id": container_id}):
@@ -310,4 +366,4 @@ class Container():
             else:
                 return False, "unknow container id."
         else:
-            return False, f"no running feeder {self.rls_name} found."
+            return False, f"no running container {name} found."

@@ -14,7 +14,6 @@
   run_once: true
   ansible.builtin.stat:
     path: "{{ content_importer_local_tmp_directory }}/{{ content_source.url | basename }}"
-    get_md5: false
     get_mime: false
     get_attributes: false
   register: _archive_checksum_local
@@ -31,7 +30,6 @@
 - name: define checksum for {{ content_source.url | basename }} on destination
   ansible.builtin.stat:
     path: "{{ content_importer_remote_tmp_directory }}/{{ content_source.url | basename }}"
-    get_md5: false
     get_mime: false
     get_attributes: false
   register: _archive_checksum_remote
