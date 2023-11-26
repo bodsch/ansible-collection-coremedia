@@ -1,0 +1,10 @@
+---
+
+container_tags:
+  tools: dev
+
+container_registry:
+  host: "registry.cm.local"
+  username: "jenkins"
+  password: "{{ vault__registry.jenkins }}"
+

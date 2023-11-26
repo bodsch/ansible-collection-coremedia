@@ -1,0 +1,9 @@
+---
+
+- name: prepare
+  ansible.builtin.import_tasks: prepare.yml
+
+- name: reset
+  ansible.builtin.import_tasks: reset.yml
+
+...

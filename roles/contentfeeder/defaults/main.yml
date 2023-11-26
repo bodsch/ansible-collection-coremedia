@@ -1,0 +1,12 @@
+---
+
+contentfeeder:
+  # contentfeeder
+  name: ""
+  # reset | restart
+  command: "reset"
+  feeder_admin:
+    username: feeder
+    password: feeder
+
+...

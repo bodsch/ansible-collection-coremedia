@@ -1,6 +1,7 @@
 # python 3 headers, required if submitting to Ansible
 from __future__ import (absolute_import, division, print_function)
 
+import re
 __metaclass__ = type
 
 from ansible.utils.display import Display
@@ -40,12 +41,25 @@ class FilterModule(object):
         :param data:
         :return:
         """
-        # display.v(f"coremedia_applications(self, {data}, {container})")
+        display.v(f"coremedia_container(self, data, {container})")
         result = []
-        result = len([x for x in data if x.get("name") == container]) != 0
 
-        display.v(f" = result {container}: {result} {type(result)}")
-        return result
+        container_names = [x.get("name") for x in data if x.get("name")]
+        display.v(f" - found containers: {container_names}")
+
+        filtered_values = list(filter(lambda v: re.match(f'^{container}.*', v), container_names))
+        display.v(f" = result: {filtered_values}")
+
+        return filtered_values
+
+        # if container in container_names:
+        #     result = True
+        #     display.v(f" = result {container}: {result} {type(result)}")
+        #
+        # result = len([x for x in data if x.get("name") == container]) != 0
+        #
+        # display.v(f" = result {container}: {result} {type(result)}")
+        # return result
 
     def sql_dialect(self, db_type="mysql"):
         """

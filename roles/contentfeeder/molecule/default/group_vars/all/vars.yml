@@ -1,0 +1,18 @@
+---
+
+coremedia_directory:
+  env: /opt/container
+
+coremedia_management_container:
+  name: "{{ container_registry.host }}/coremedia/management-tools:{{ container_tags.tools }}"
+
+coremedia_management_feeder:
+  name: "cae-feeder-live"
+  command: "foo"
+
+coremedia_management_rls: {}
+  # name: replication-live-server-01
+  # state: runlevel
+  # ior: "http://mls.cm.local:40280/ior"
+
+...

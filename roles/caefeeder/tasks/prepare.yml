@@ -1,0 +1,18 @@
+---
+
+- name: pull management container from container registry
+  community.general.docker_image:
+    name: "{{ management_container.name }}"
+    source: pull
+    force_tag: true
+    force_source: true
+  register: _container_images_information_pulled
+  ignore_errors: false
+  tags:
+    - container_pull
+
+- name: pull container
+  debug:
+    msg: "{{ _container_images_information_pulled.actions | default('') }}"
+
+...

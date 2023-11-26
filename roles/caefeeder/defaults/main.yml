@@ -1,0 +1,13 @@
+---
+
+management_container:
+  # e.g. registry.cm.local/coremedia/management-tools:dev
+  name: ""
+
+caefeeder:
+  # caefeeder-live | caefeeder-preview
+  name: ""
+  # reset | restart
+  command: "reset"
+
+...

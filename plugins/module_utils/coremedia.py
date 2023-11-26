@@ -1,0 +1,92 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+# (c) 2023, Bodo Schulz <bodo@boone-schulz.de>
+
+from __future__ import absolute_import, division, print_function
+
+# import os
+# import time
+# from contextlib import suppress
+# import docker
+# from docker.errors import DockerException
+# from docker.types import LogConfig
+
+from ansible_collections.bodsch.coremedia.plugins.module_utils.container import Container
+
+class Coremedia():
+    """
+    """
+
+    def __init__(self, module):
+        """
+        """
+        self.module = module
+
+        # self.module.log("Coremedia::__init__")
+
+        self.container = Container(self.module)
+
+    def container_running(self, container, args):
+        """
+        """
+        pass
+
+
+    def content_server_runlevel(self, management_container_image, content_server, admin_username, admin_password, ior):
+        """
+            :return:
+        """
+        cmd = []
+        cmd.append("runlevel")
+        cmd.append("--user")
+        cmd.append(admin_username)
+        cmd.append("--password")
+        cmd.append(admin_password)
+        if ior:
+            cmd.append("--url")
+            cmd.append(ior)
+
+        output, status_code, status_msg = self.container.run_container(
+            container_image=management_container_image,
+            name=f"{content_server}-runlevel",
+            cmd=cmd,
+        )
+
+        online = len([match for match in output if " run level is online" in match]) > 0
+
+        # self.module.log(msg=f"  - online      : {online}")
+        # self.module.log(msg=f"  - output      : {output}")
+        # self.module.log(msg=f"  - status_code : {status_code}")
+        # self.module.log(msg=f"  - status_msg  : {status_msg}")
+
+        return online, output, status_code, status_msg
+
+    def feeder_status(self, feeder_name):
+        """
+        :return:
+        """
+        result = dict(
+            status="unknown",
+            running=False
+        )
+
+        container = self.container.container_search(feeder_name)
+
+        if container and isinstance(container, dict):
+            """
+            """
+            container_state = container.get('State', {})
+            _status = container_state.get("Status", None)
+            _running = container_state.get("Running", False)
+
+            self.module.log(msg=f"  - status : {_status}")
+            self.module.log(msg=f"  - running: {_running}")
+
+            result = dict(
+                feeder=feeder_name,
+                status=_status,
+                running=_running
+            )
+
+        return result

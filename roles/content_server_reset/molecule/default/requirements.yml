@@ -1,0 +1,8 @@
+---
+
+roles:
+  - name: docker
+    src: bodsch.docker
+    version: 3.7.0
+
+...

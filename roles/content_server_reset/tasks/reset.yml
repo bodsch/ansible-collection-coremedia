@@ -1,0 +1,12 @@
+---
+
+- name: reset content server {{ content_server_reset.content_server }}
+  bodsch.coremedia.content_server_reset:
+    management_container_image: "{{ management_container.name }}"
+    content_server: "{{ content_server_reset.content_server }}"
+    content_server_ior: "{{ content_server_reset.content_server_ior }}"
+    coremedia_admin: "{{ content_server_reset.admin_user }}"
+    sql_store: "{{ content_server_reset.sql_store }}"
+
+...
+

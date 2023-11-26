@@ -1,0 +1,17 @@
+---
+
+- name: reset caefeeder
+  bodsch.coremedia.caefeeder:
+    state: "{{ caefeeder.command | default('verify') }}"
+    management_container_image: "{{ management_container.name }}"
+    feeder_name: "{{ caefeeder.name | default('') }}"
+    environments_file: "{{ coremedia_directory.env }}/{{ caefeeder.name }}/container.env"
+  register: _feeder_reset
+
+- name: output
+  debug:
+    msg: "{{ _feeder_reset.msg }}"
+  when:
+    - _feeder_reset is defined
+    - _feeder_reset.msg is defined
+    - _feeder_reset.msg | string | length > 0

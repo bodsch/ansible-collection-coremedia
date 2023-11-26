@@ -16,7 +16,6 @@ from ansible_collections.bodsch.coremedia.plugins.module_utils.container import 
 from ansible_collections.bodsch.coremedia.plugins.module_utils.properties import (write_properties_file, environments_from_file)
 from ansible_collections.bodsch.coremedia.plugins.module_utils.coremedia import Coremedia
 
-
 class CoremediaResetContentServer():
     """
     """

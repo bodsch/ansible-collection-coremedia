@@ -1,17 +1,15 @@
 ---
 
 galaxy_info:
-  role_name: prometheus_config
-
-  description: A role for deploying CoreMedia Prometheus configurations
+  role_name: content_server_reset
+  namespace: bodsch
 
   author: Bodo Schulz <bodo@boone-schulz.de>
-  license: Apache
+  description: A role to Resets the database of a CoreMedia content server
 
   min_ansible_version: "2.9"
 
   platforms:
-    - name: Archlinux
     - name: Debian
       versions:
         - all
@@ -21,7 +19,5 @@ galaxy_info:
 
   galaxy_tags:
     - coremedia
-    - prometheus
-    - monitoring
 
 dependencies: []

@@ -1,0 +1,18 @@
+---
+
+- name: reset contentfeeder
+  bodsch.coremedia.contentfeeder:
+    state: "{{ caefeeder.command | default('verify') }}"
+    feeder_name: "{{ contentfeeder.name }}"
+    feeder_admin:
+      username: "{{ contentfeeder.feeder_admin.username | default('feeder') }}"
+      password: "{{ contentfeeder.feeder_admin.password | default('feeder') }}"
+  register: _feeder_reset
+
+- name: output
+  debug:
+    msg: "{{ _feeder_reset.msg }}"
+  when:
+    - _feeder_reset is defined
+    - _feeder_reset.msg is defined
+    - _feeder_reset.msg | string | length > 0

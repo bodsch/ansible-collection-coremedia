@@ -187,11 +187,6 @@ def main():
             required=True,
             type="str"
         ),
-        reset=dict(
-            required=False,
-            type="bool",
-            default=True
-        ),
         extra_hosts=dict(
             required=False,
             type="dict",

@@ -121,7 +121,21 @@ class Container():
 
     def exec_container(self, container_id, cmd):
         """
-        :return:
+    #         Run a command inside this container. Similar to docker exec
+    #
+    #         exec_run(cmd,
+    #             stdout=True,
+    #             stderr=True,
+    #             stdin=False,
+    #             tty=False,
+    #             privileged=False,
+    #             user='',
+    #             detach=False,
+    #             stream=False,
+    #             socket=False,
+    #             environment=None,
+    #             workdir=None,
+    #             demux=False)
         """
         self.module.log(f" run command {cmd} inside the container.")
 
@@ -129,22 +143,17 @@ class Container():
         _status_code = 500
         _status_msg = None
 
-        log_config = LogConfig(
-            type=LogConfig.types.JSON,
-            config={
-                'max-size': '5m',
-            }
-        )
-
         try:
-            container = self.docker_client.containers.get(id)
+            container = self.docker_client.containers.get(container_id)
 
             # self.module.log("---- exec_run() --------------")
             _status_code, output = container.exec_run(
                 cmd=cmd,
-                log_config=log_config,
                 detach=False,
             )
+
+            self.module.log(msg=f" - _status_code : {_status_code}")
+            self.module.log(msg=f" - output       : {output}")
 
             if _status_code == 0:
                 """
@@ -189,14 +198,34 @@ class Container():
 
         return output, _status_code, _status_msg
 
-    def write_properties_file(self):
+    def write_properties_file(self, filename, data):
         """
             sql.store.driver = org.postgresql.Driver
             sql.store.url = jdbc:postgresql://bce-cmpdb-sv04.tik.intern:5432/replication_live_server
             sql.store.user = replication_live_server
             sql.store.password = RdhYNZC6bnx2lzuk9sYFkZ7dTjcGZsaFOrHoqhaVvK
         """
-        pass
+        if isinstance(data, dict):
+            self.module.log(msg=f"  - {data}")
+            with open(filename, "w") as f:
+                f.write("# written by ansible\n")
+                if len(data) > 0:
+                    f.write("# SQL STORE\n")
+                    sql_store_driver = data.get("driver", None)
+                    sql_store_url = data.get("url", None)
+                    sql_store_username = data.get("username", None)
+                    sql_store_password = data.get("password", None)
+
+                    if sql_store_driver:
+                        f.write(f"sql.store.driver       = {sql_store_driver}\n")
+                    if sql_store_url:
+                        f.write(f"sql.store.url          = {sql_store_url}\n")
+                    if sql_store_username:
+                        f.write(f"sql.store.user         = {sql_store_username}\n")
+                    if sql_store_password:
+                        f.write(f"sql.store.password     = {sql_store_password}\n")
+
+                os.chown(filename, 1000, 1000)
 
         # self.environments_file =
 
@@ -287,14 +316,20 @@ class Container():
             """
             """
             # self.module.log(msg=f"  type {type(all_containers)}")
-
             if isinstance(all_containers, dict):
+                container_id = None
+
                 result = {k: v for k, v in all_containers.items() if v.get('Name', '')[1:] == name}
                 # self.module.log(msg=f"  result {result}")
-
                 if result:
                     container_id = list(result.keys())[0]
-                    # self.module.log(msg=f"  - found container id: {container_id}")
+                else:
+                    result = {k: v for k, v in all_containers.items() if v.get('Name', '')[1:].startswith(name)}
+                    # self.module.log(msg=f"  result {result}")
+                    container_id = list(result.keys())[0]
+
+                if container_id:
+                    self.module.log(msg=f"  - found container id: {container_id}")
                     return self.container(container_id)
 
         return None
@@ -367,3 +402,13 @@ class Container():
                 return False, "unknow container id."
         else:
             return False, f"no running container {name} found."
+
+    def parse_container_output(self, output, valid_arr):
+        """
+        """
+        result = []
+        for line in output:
+            if line.startswith(tuple(valid_arr)):
+                result.append(line)
+
+        return result

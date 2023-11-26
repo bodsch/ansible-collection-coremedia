@@ -1,0 +1,35 @@
+---
+
+content_server_reset_delegate_to: localhost
+
+content_server_reset_local_tmp_directory: "{{
+  lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
+  default(lookup('env', 'HOME') ~ '/.cache/ansible/content_server_reset', true) }}"
+
+content_server_reset_remote_tmp_directory: /root/.ansible/content_server_reset
+
+content_server_reset_requirements:
+  - gzip
+
+content_server_reset_defaults:
+  # content-management-server
+  # master-live-server
+  # replication-live-server
+  content_server: ""
+  #  coremedia_ior:
+  #    cms: "http://content-management-server.{{ coremedia_hosts_domain }}:40180/ior"
+  #    mls: "http://master-live-server.{{ coremedia_hosts_domain }}:40280/ior"
+  #    wfs: "http://workflow-server.{{ coremedia_hosts_domain }}:40380/ior"
+  #    rls1: "http://replication-live-server-01.{{ coremedia_hosts_domain }}:42080/ior"
+  #    rls2: "http://replication-live-server-02.{{ coremedia_hosts_domain }}:42080/ior"
+  content_server_ior: ""
+  admin_user:
+    username: admin
+    password: admin
+  sql_store:
+    driver: ""
+    url: ""
+    username: ""
+    password: ""
+
+...

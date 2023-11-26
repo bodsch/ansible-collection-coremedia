@@ -1,0 +1,38 @@
+---
+
+- name: verify management container
+  bodsch.coremedia.feeder:
+    container_image: "{{ management_container.name | default('')  }}"
+  register: _container
+
+- name: management container
+  when:
+    - _container is defined
+    - not _container.container_image is defined or _container.container_image | string | length == 0
+  block:
+    - name: management container '{{ management_container.name }}'
+      debug:
+        msg: "{{ _container }}"
+      when:
+        - _container is defined
+
+- name: pull management container from container registry
+  community.general.docker_image:
+    name: "{{ management_container.name }}"
+    source: pull
+    force_tag: true
+    force_source: true
+  register: _container_images_information_pulled
+  ignore_errors: false
+  tags:
+    - container_pull
+
+- name: pull container
+  debug:
+    msg: "{{ _container_images_information_pulled.actions | default('') }}"
+
+- name: merge configuration between defaults and custom
+  ansible.builtin.set_fact:
+    content_server_reset: "{{ content_server_reset_defaults | combine(content_server_reset, recursive=True) }}"
+
+...

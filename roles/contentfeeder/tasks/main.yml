@@ -1,0 +1,15 @@
+---
+
+- name: prepare
+  ansible.builtin.import_tasks: prepare.yml
+
+- name: contentfeeder
+  import_tasks: contentfeeder.yml
+  when:
+    - contentfeeder is defined
+    - contentfeeder | count > 0
+    - contentfeeder.name is defined
+    - contentfeeder.name | string | length > 0
+    - contentfeeder.name == "content-feeder"
+
+...

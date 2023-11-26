@@ -1,0 +1,19 @@
+---
+
+management_container:
+  # e.g. registry.cm.local/coremedia/management-tools:dev
+  name: ""
+
+content_server_reset:
+  content_server: ""
+  content_server_ior: ""
+  admin_user:
+    username: admin
+    password: admin
+  sql_store:
+    driver: ""
+    url: ""
+    username: ""
+    password: ""
+
+...
