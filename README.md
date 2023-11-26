@@ -9,6 +9,7 @@ Documentation for the collection.
 | [bodsch.coremedia.prometheus_config](./roles/prometheus_config/README.md)  |       |       |
 | [bodsch.coremedia.licenses](./roles/licenses/README.md)                    |       |       |
 | [bodsch.coremedia.content_server_reset](./roles/content_server_reset/README.md) |       |       |
+| [bodsch.coremedia.caefeeder](./roles/caefeeder/README.md)                  |       |       |
 
 ## Modules
 
@@ -16,6 +17,7 @@ Documentation for the collection.
 |:---------------------------------------------------------------------------| :---- | :---- |
 | `bodsch.coremedia.content_server_state`                                    |       | Returns the current status of a content server |
 | `bodsch.coremedia.content_server_reset`                                    |       | Resets the database of a content server      |
+| `bodsch.coremedia.caefeeder`                                               |       | Resets a CAEFeeder      |
 
 
 ### planned
