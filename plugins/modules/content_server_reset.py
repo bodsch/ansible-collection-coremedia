@@ -14,10 +14,13 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.bodsch.core.plugins.module_utils.directory import create_directory
 from ansible_collections.bodsch.coremedia.plugins.module_utils.container import Container
 from ansible_collections.bodsch.coremedia.plugins.module_utils.properties import (write_properties_file, environments_from_file)
+from ansible_collections.bodsch.coremedia.plugins.module_utils.coremedia import Coremedia
+
 
 class CoremediaResetContentServer():
     """
     """
+
     def __init__(self, module):
         """
         """
@@ -51,16 +54,21 @@ class CoremediaResetContentServer():
         create_directory(directory=self.properties_directory, owner="1000", group="1000", mode="0755")
 
         self.container = Container(self.module)
+        self.coremedia = Coremedia(self.module)
 
-        images = self.container.container_images(self.management_container_image)
+        container = self.container.container_search(self.content_server)
 
-        # self.module.log(f"  - images : {images}")
+        if container:
+            # self.module.log(f"  - container : {container}")
+            self.content_server = container.get("Name", '')[1:]   # cut first char
+            # self.module.log(f"  - container_name : {self.content_server}")
 
-        if images:
+        if self.content_server:
             """
             """
-            output, status_code, status_msg = self.content_server_runlevel()
-            # self.module.log(msg=f"  - runlevel online: {output}")
+            online, output, status_code, status_msg = self.content_server_runlevel()
+
+            self.module.log(msg=f"  - runlevel online: {online}, {output}")
 
             if output:
                 if self.module.check_mode:
@@ -68,26 +76,32 @@ class CoremediaResetContentServer():
                     _changed = False
                     _msg = f"we are in check mode, content-server {self.content_server} will not be reset."
                     self.module.log(_msg)
-                else:
-                    state, msg = self.container.container_stop(self.content_server)
-                    self.module.log(msg=f"  - {state}, {msg}")
-                    time.sleep(5)
 
-                    content_server_reset = self.content_server_reset()
-                    self.module.log(msg=f"  - reset: {content_server_reset}")
-                    time.sleep(5)
-                    _changed = True
+                    return dict(
+                        failed=_failed,
+                        changed=_changed,
+                        msg=_msg
+                    )
 
-                    state, msg = self.container.container_start(self.content_server)
-                    self.module.log(msg=f"  - {state}, {msg}")
-                    time.sleep(20)
+            state, msg = self.container.container_stop(self.content_server)
+            self.module.log(msg=f"  - {state}, {msg}")
+            time.sleep(5)
 
-                    output, status_code, status_msg = self.content_server_runlevel()
-                    self.module.log(msg=f"  - runlevel online: {output}")
+            content_server_reset = self.content_server_reset()
+            self.module.log(msg=f"  - reset: {content_server_reset}")
+            time.sleep(5)
+            _changed = True
 
-                    if status_code == 200:
-                        _failed = False
-                        _msg = f"Content server {self.content_server} successfully reset."
+            state, msg = self.container.container_start(self.content_server)
+            self.module.log(msg=f"  - {state}, {msg}")
+            time.sleep(20)
+
+            online, output, status_code, status_msg = self.content_server_runlevel()
+            self.module.log(msg=f"  - runlevel online: {online}, {output}")
+
+            if status_code == 200:
+                _failed = False
+                _msg = f"Content server {self.content_server} successfully reset."
 
         else:
             _msg = f"Container Image {self.management_container_image} not found."
@@ -102,32 +116,14 @@ class CoremediaResetContentServer():
         """
         :return:
         """
-        cmd = []
-        cmd.append("runlevel")
-        cmd.append("--user")
-        cmd.append(self.cm_admin_username)
-        cmd.append("--password")
-        cmd.append(self.cm_admin_password)
-        if self.content_server_ior:
-            cmd.append("--url")
-            cmd.append(self.content_server_ior)
+        online, output, status_code, status_msg = self.coremedia.content_server_runlevel(
+            self.management_container_image,
+            self.content_server,
+            self.cm_admin_username,
+            self.cm_admin_password,
+            self.content_server_ior)
 
-        _output, _status_code, _status_msg = self.container.run_container(
-            container_image=self.management_container_image,
-            name=f"{self.content_server}-runlevel",
-            cmd=cmd
-        )
-
-        online = len([match for match in _output if " run level is online" in match]) > 0
-
-        self.module.log(msg=f"  - _output      : {_output}")
-        self.module.log(msg=f"  - online       : {online}")
-        self.module.log(msg=f"  - _status_code : {_status_code}")
-        self.module.log(msg=f"  - _status_msg  : {_status_msg}")
-
-        return online, _status_code, _status_msg
-
-        # return self.container.run_container(cmd, env)
+        return (online, output, status_code, status_msg)
 
     def content_server_reset(self):
         """
