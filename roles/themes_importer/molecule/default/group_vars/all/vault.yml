@@ -1,0 +1,9 @@
+---
+
+vault__jenkins:
+  admin_password: ""
+
+vault_coremedia:
+  tools_serviceuser: admin
+
+...

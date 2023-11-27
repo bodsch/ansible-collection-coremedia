@@ -1,0 +1,15 @@
+---
+
+- name: publish themes
+  bodsch.coremedia.themes_importer:
+    state: publish
+    management_container_image: "{{ management_container.name }}"
+    content_server_ior: "{{ themes_importer.content_server_ior }}"
+    coremedia_admin: "{{ themes_importer.admin_user }}"
+  register: _publish
+
+- name: output from publish themes
+  debug:
+    msg: "{{ _publish }}"
+
+...

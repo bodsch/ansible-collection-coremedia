@@ -1,0 +1,23 @@
+---
+
+galaxy_info:
+  role_name: themes_importer
+  namespace: bodsch
+
+  author: Bodo Schulz <bodo@boone-schulz.de>
+  description: A role to download, import, approve and publish Themes
+
+  min_ansible_version: 2.9
+
+  platforms:
+    - name: Debian
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+
+  galaxy_tags:
+    - coremedia
+
+dependencies: []

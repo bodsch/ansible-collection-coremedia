@@ -1,0 +1,33 @@
+---
+
+- name: prepare
+  include_tasks: prepare.yml
+
+- name: download
+  include_tasks: download.yml
+
+- name: import themes
+  include_tasks: import.yml
+  tags:
+    - themes_import
+  when:
+    - themes_importer_run.import | default('false')
+
+- name: approve themes
+  include_tasks: approve.yml
+  tags:
+    - themes_import
+  when:
+    - themes_importer_run.approve | default('false')
+
+- name: publish themes
+  include_tasks: publish.yml
+  tags:
+    - themes_import
+  when:
+    - themes_importer_run.publish | default('false')
+
+- name: cleanup
+  include_tasks: cleanup.yml
+
+...

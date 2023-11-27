@@ -1,0 +1,36 @@
+---
+
+themes_importer_tmp_directory: "{{
+  lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
+  default(lookup('env', 'HOME') ~ '/.cache/ansible/coremedia-themes', true) }}"
+
+themes_importer_paths:
+  tmp_remote: "/var/tmp"
+
+themes_importer_defaults:
+  #  coremedia_ior:
+  #    cms: "http://content-management-server.{{ coremedia_hosts_domain }}:40180/ior"
+  #    mls: "http://master-live-server.{{ coremedia_hosts_domain }}:40280/ior"
+  #    wfs: "http://workflow-server.{{ coremedia_hosts_domain }}:40380/ior"
+  #    rls1: "http://replication-live-server-01.{{ coremedia_hosts_domain }}:42080/ior"
+  #    rls2: "http://replication-live-server-02.{{ coremedia_hosts_domain }}:42080/ior"
+  content_server_ior:
+    cms: ""
+    mls: ""
+  admin_user:
+    username: admin
+    password: admin
+  extra_hosts: {}
+
+themes_importer_defaults_source:
+  url: ""
+  username: ""
+  password: ""
+  validate_certs: false
+
+content_importer_defaults_ior:
+  cms: 'http://cms.cm.local:40180/ior'
+  mls: 'http://mls.cm.local:40280/ior'
+  wfs: 'http://wfs.cm.local:40380/ior'
+
+...

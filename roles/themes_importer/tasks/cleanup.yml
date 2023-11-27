@@ -1,0 +1,13 @@
+---
+
+- name: remove temporary files
+  file:
+    state: absent
+    path: /var/tmp/coremedia-themes-archive.zip
+
+- name: remove temporary directory
+  file:
+    state: absent
+    path: /var/tmp/archive
+
+...

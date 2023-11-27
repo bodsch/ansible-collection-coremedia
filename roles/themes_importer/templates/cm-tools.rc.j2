@@ -1,0 +1,23 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
+
+MANAGEMENT_TOOLS_CONTAINER="{{ themes_importer_tools_container }}"
+
+CMS_USER={{ cm_tools.cli.username | default('admin') }}
+CMS_PASSWORD={{ cm_tools.cli.password | default('admin') }}
+
+WFS_ENV_FILE="/opt/container/workflow-server/container.env"
+CMS_ENV_FILE="/opt/container/content-management-server/container.env"
+STUDIO_SERVER_ENV_FILE="/opt/container/studio-server/container.env"
+
+CMS_PROPERTIES_FILE="/opt/container/content-management-server/content-management-server.properties"
+
+LOKI_URL="{{ cm_tools.loki_url }}"
+
+THEME_ARCHIVES=(
+  {{ themes_importer_archives | join("\n") | indent(2, first=False) }}
+)
+
+THEME_ARCHIVES_PATH="/var/tmp/archive/frontend/target/themes"
+
+TMP_DIR="$(mktemp --dry-run --tmpdir=/var/tmp/coremedia)"

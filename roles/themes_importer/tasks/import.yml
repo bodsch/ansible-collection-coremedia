@@ -1,0 +1,17 @@
+---
+
+- name: import themes
+  bodsch.coremedia.themes_importer:
+    state: import
+    management_container_image: "{{ management_container.name }}"
+    themes_archive: "{{ themes_importer_paths.tmp_remote }}/archive/coremedia-themes-archive.zip"
+    content_server_ior: "{{ themes_importer.content_server_ior }}"
+    coremedia_admin: "{{ themes_importer.admin_user }}"
+    extra_hosts: "{{ themes_importer_extra_hosts | default({}) }}"
+  register: _import
+
+- name: output from import themes
+  debug:
+    msg: "{{ _import }}"
+
+...

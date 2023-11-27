@@ -1,5 +1,24 @@
 ---
 
+- name: merge configuration between defaults and custom
+  ansible.builtin.set_fact:
+    themes_importer_source: "{{ themes_importer_defaults_source | combine(themes_importer_source, recursive=True) }}"
+
+- name: validate themes_importer_source
+  fail:
+    msg: "your download definition is not valid!\n
+         The following parameters are required:\n
+         - archive   : the url to the jenkins download archive\n
+         - username  : the login username for jenkins\n
+         - password  : the login password for jenkins"
+  when:
+    - (not themes_importer_source.archive is defined or
+           themes_importer_source.archive | string | length == 0) or
+      (not themes_importer_source.username is defined or
+           themes_importer_source.username | string | length == 0) or
+      (not themes_importer_source.password is defined or
+           themes_importer_source.password | string | length == 0)
+
 - name: verify container
   bodsch.coremedia.management_tools:
     management_container_image: "{{ management_container.name | default('')  }}"
@@ -33,6 +52,6 @@
 
 - name: merge configuration between defaults and custom
   ansible.builtin.set_fact:
-    content_server_reset: "{{ content_server_reset_defaults | combine(content_server_reset, recursive=True) }}"
+    themes_importer: "{{ themes_importer_defaults | combine(themes_importer, recursive=True) }}"
 
 ...

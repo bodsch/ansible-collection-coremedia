@@ -90,3 +90,30 @@ class Coremedia():
             )
 
         return result
+
+    def management_tools(self, management_container_image):
+        """
+        """
+        result = dict(
+            failed=False,
+            exists=False,
+            msg=f"Image {management_container_image} not found."
+        )
+
+        images = self.container.container_images(management_container_image)
+        self.module.log(f"  - images : {images}")
+
+        if images and isinstance(images, dict):
+            _image_name = list(images.keys())[0]
+
+            self.module.log(f"  - name : {_image_name}")
+
+            if _image_name == management_container_image:
+                result = dict(
+                    failed=False,
+                    exists=True,
+                    container_image=_image_name
+                )
+
+        return result
+

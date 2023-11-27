@@ -1,0 +1,30 @@
+---
+
+management_container:
+  # e.g. registry.cm.local/coremedia/management-tools:dev
+  name: ""
+
+themes_importer:
+  content_server_ior:
+    cms: ""
+    mls: ""
+  admin_user:
+    username: admin
+    password: admin
+  extra_hosts: {}
+
+themes_importer_run:
+  import: false
+  approve: false
+  publish: false
+
+themes_importer_owner: 1000
+themes_importer_group: 1000
+
+themes_importer_source:
+  archive: ""
+  username: "admin"
+  password: ""
+  validate_certs: false
+
+...

@@ -1,0 +1,257 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+#!/usr/bin/env bash
+#
+# {{ ansible_managed }}
+
+set +e
+set +x
+
+. /usr/local/etc/cm-tools.rc
+
+trap_with_arg() {
+  func="$1" ; shift
+  for sig
+  do
+    trap "$func $sig" "$sig"
+  done
+}
+
+func_trap() {
+  echo "Trapped: $1"
+  exit_hook
+}
+
+exit_hook() {
+  # clean up
+  rm -rf "${TMP_DIR}" 2> /dev/null
+}
+trap_with_arg func_trap INT TERM QUIT EXIT
+
+STATE=1
+ERROR=false
+ERROR_CODE=0
+
+prepare() {
+
+  [ -d  "${TMP_DIR}" ] || mkdir -p "${TMP_DIR}"
+
+  # fix rights
+  chown -R 1000:1000 /var/tmp/archive
+}
+
+validate() {
+
+  if [ -z "${CMS_USER}" ] || [ -z "${CMS_PASSWORD}" ]
+  then
+    echo "ERROR: missing credentials"
+    echo "       you must define \$CMS_USER and \$CMS_PASSWORD"
+    exit 1
+  fi
+}
+
+check_container() {
+  echo "pulling latest image of '${MANAGEMENT_TOOLS_CONTAINER}'"
+
+  output=$(docker pull ${MANAGEMENT_TOOLS_CONTAINER})
+
+  result_code="${?}"
+
+  if [ "${result_code}" -gt 0 ]
+  then
+    echo "ERROR while pulling latest image of '${MANAGEMENT_TOOLS_CONTAINER}', exit with: (${result_code})"
+    exit 1
+  fi
+
+  while read -r line
+  do
+    echo -e "    $line"
+  done < <(echo "$output")
+  echo ""
+
+{% raw %}
+  if [ $(docker image \
+    ls --format "table {{.Repository}}" | \
+    grep -c management-tools) -eq 0 ]
+  then
+    echo "ERROR management-tools container are not present!"
+    exit 1
+  fi
+{% endraw %}
+}
+
+cms_ior() {
+  env_file="${WFS_ENV_FILE}"
+
+  # extract URL
+  CMS_IOR="$(
+    grep CAP_CLIENT_SERVER_IOR_URL ${env_file} | \
+    grep -v "#" | \
+    cut -d '=' -f2)"
+
+  # test IOR
+  curl \
+    --silent \
+    --fail \
+    --output /dev/null \
+    ${CMS_IOR}
+
+  echo ${CMS_IOR}
+}
+
+mls_ior() {
+  env_file="${CMS_ENV_FILE}"
+
+  MLS_IOR="$(
+    grep PUBLISHER_TARGET_0_IOR_URL ${env_file} | \
+    grep -v "#" | \
+    cut -d '=' -f2)"
+
+  if [[ -z ${MLS_IOR} ]] && [[ -e "${CMS_PROPERTIES_FILE}" ]]
+  then
+    MLS_IOR="$(
+      grep publisher.target.ior.url "${CMS_PROPERTIES_FILE}" | \
+      cut -d '=' -f2)"
+  fi
+
+  curl \
+    --silent \
+    --fail \
+    --output /dev/null \
+    ${MLS_IOR}
+
+  echo ${MLS_IOR}
+}
+
+import_themes() {
+
+  # detect right IOR URLs ...
+  local _cms_ior=$(cms_ior)
+  local _mls_ior=$(mls_ior)
+
+  for archive in ${THEME_ARCHIVES[@]}
+  do
+    arch=$(basename ${archive} .zip)
+
+    echo "import theme '${arch}'"
+
+    output=$(docker run \
+      --name theme-importer_${arch} \
+      --hostname theme-importer_${arch} \
+      {{ themes_importer_generic_docker_env | join(" \\\n") | indent(6) }} \
+      --label job=theme-importer \
+      --env CMS_IOR_URL=${_cms_ior} \
+      --env MLS_IOR_URL=${_mls_ior} \
+      --mount type=bind,source=${THEME_ARCHIVES_PATH},target=/run/host \
+      ${MANAGEMENT_TOOLS_CONTAINER} \
+        import-themes \
+          --user ${CMS_USER} \
+          --password ${CMS_PASSWORD} \
+          --url ${_cms_ior} \
+          /run/host/${archive})
+
+    result_code="${?}"
+
+    if [ "${result_code}" -gt 0 ]
+    then
+      echo "ERROR (${result_code}) ..."
+      ERROR=true
+      ERROR_CODE=${result_code}
+    fi
+
+    while read -r line
+    do
+      echo -e "    $line"
+    done < <(echo "$output")
+    echo ""
+  done
+}
+
+
+publish_themes() {
+
+  # detect right IOR URLs ...
+  local _cms_ior=$(cms_ior)
+
+  echo "approve and checkin /Themes"
+
+  output=$(docker run \
+    --name theme-approver \
+    --hostname theme-approver \
+    {{ themes_importer_generic_docker_env | join(" \\\n") | indent(4) }} \
+    --label job=theme-importer \
+    ${MANAGEMENT_TOOLS_CONTAINER} \
+      bulkpublish \
+        --user ${CMS_USER} \
+        --password ${CMS_PASSWORD} \
+        --url ${_cms_ior} \
+        --approve \
+        --checkin \
+        --folder /Themes 2> /dev/stdout)
+
+  result_code="${?}"
+
+  if [ "${result_code}" -gt 0 ]
+  then
+    echo "ERROR (${result_code}) ..."
+    ERROR=true
+    ERROR_CODE=${result_code}
+  fi
+
+  while read -r line
+  do
+    echo -e "    $line"
+  done < <(echo "$output")
+  echo ""
+
+  echo "publish /Themes"
+  output=$(docker run \
+    --name theme-publisher \
+    --hostname theme-publisher \
+    {{ themes_importer_generic_docker_env | join(" \\\n") | indent(4) }} \
+    --label job=theme-importer \
+    ${MANAGEMENT_TOOLS_CONTAINER} \
+      bulkpublish \
+        --user ${CMS_USER} \
+        --password ${CMS_PASSWORD} \
+        --url ${_cms_ior} \
+        --publish \
+        --folder /Themes 2> /dev/stdout)
+
+  result_code="${?}"
+
+  if [ "${result_code}" -gt 0 ]
+  then
+    echo "ERROR (${result_code}) ..."
+    ERROR=true
+    ERROR_CODE=${result_code}
+  fi
+
+  while read -r line
+  do
+    echo -e "    $line"
+  done < <(echo "$output")
+  echo ""
+}
+
+clean_up() {
+
+  rm -rf ${TMP_DIR} > /dev/null
+}
+
+run() {
+
+  check_container
+  validate
+  prepare
+
+  import_themes
+  publish_themes
+
+  clean_up
+
+  echo "done ..."
+}
+
+run
+
+exit ${ERROR_CODE}
