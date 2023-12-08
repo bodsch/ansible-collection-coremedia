@@ -16,7 +16,6 @@ from docker.types import LogConfig
 class Container():
     """
     """
-
     def __init__(self, module):
         """
         """
@@ -121,21 +120,21 @@ class Container():
 
     def exec_container(self, container_id, cmd):
         """
-    #         Run a command inside this container. Similar to docker exec
-    #
-    #         exec_run(cmd,
-    #             stdout=True,
-    #             stderr=True,
-    #             stdin=False,
-    #             tty=False,
-    #             privileged=False,
-    #             user='',
-    #             detach=False,
-    #             stream=False,
-    #             socket=False,
-    #             environment=None,
-    #             workdir=None,
-    #             demux=False)
+            Run a command inside this container. Similar to docker exec
+
+            exec_run(cmd,
+                stdout=True,
+                stderr=True,
+                stdin=False,
+                tty=False,
+                privileged=False,
+                user='',
+                detach=False,
+                stream=False,
+                socket=False,
+                environment=None,
+                workdir=None,
+                demux=False)
         """
         self.module.log(f" run command {cmd} inside the container.")
 
@@ -340,22 +339,27 @@ class Container():
         """
         self.module.log(f"Container::container_stop({name})")
 
-        container = self.container_search(name)
+        (state, message) = self.__container_start_stop("stop", name, 1)
 
-        if container:
-            container_id = container.get("Id", None)
+        return (state, message)
 
-            self.module.log(f" = stop container with id {container_id}")
-
-            if container_id:
-                for container in self.docker_client.containers.list(all=True, filters={"id": container_id}):
-                    container.stop()
-
-                return True, 'stop command completed successfully.'
-            else:
-                return False, "unknow container id."
-        else:
-            return False, f"no running container {name} found."
+        # container = self.container_search(name)
+        #
+        # if container:
+        #     container_id = container.get("Id", None)
+        #
+        #     self.module.log(f" = stop container with id {container_id}")
+        #
+        #     if container_id:
+        #         for container in self.docker_client.containers.list(all=True, filters={"id": container_id}):
+        #             container.stop()
+        #             time.sleep(1)
+        #
+        #         return True, 'stop command completed successfully.'
+        #     else:
+        #         return False, "unknow container id."
+        # else:
+        #     return False, f"no running container {name} found."
 
     def container_start(self, name):
         """
@@ -363,22 +367,27 @@ class Container():
         """
         self.module.log(f"Container::container_start({name})")
 
-        container = self.container_search(name)
+        (state, message) = self.__container_start_stop("start", name, 1)
 
-        if container:
-            container_id = container.get("Id", None)
+        return (state, message)
 
-            self.module.log(f" = start container with id {container_id}")
-
-            if container_id:
-                for container in self.docker_client.containers.list(all=True, filters={"id": container_id}):
-                    container.start()
-
-                return True, 'start command completed successfully.'
-            else:
-                return False, "unknow container id."
-        else:
-            return False, f"no running container {name} found."
+        # container = self.container_search(name)
+        #
+        # if container:
+        #     container_id = container.get("Id", None)
+        #
+        #     self.module.log(f" = start container with id {container_id}")
+        #
+        #     if container_id:
+        #         for container in self.docker_client.containers.list(all=True, filters={"id": container_id}):
+        #             container.start()
+        #             time.sleep(1)
+        #
+        #         return True, 'start command completed successfully.'
+        #     else:
+        #         return False, "unknow container id."
+        # else:
+        #     return False, f"no running container {name} found."
 
     def container_restart(self, name):
         """
@@ -386,22 +395,27 @@ class Container():
         """
         self.module.log(f"Container::container_restart({name})")
 
-        container = self.container_search(name)
+        (state, message) = self.__container_start_stop("restart", name, 1)
 
-        if container:
-            container_id = container.get("Id", None)
+        return (state, message)
 
-            self.module.log(f" = restart conatiner with id {container_id}")
-
-            if container_id:
-                for container in self.docker_client.containers.list(all=True, filters={"id": container_id}):
-                    container.restart()
-
-                return True, 'restart command completed successfully.'
-            else:
-                return False, "unknow container id."
-        else:
-            return False, f"no running container {name} found."
+        # container = self.container_search(name)
+        #
+        # if container:
+        #     container_id = container.get("Id", None)
+        #
+        #     self.module.log(f" = restart conatiner with id {container_id}")
+        #                    else:
+                        container.start()
+        #     if container_id:
+        #         for container in self.docker_client.containers.list(all=True, filters={"id": container_id}):
+        #             container.restart()
+        #
+        #         return True, 'restart command completed successfully.'
+        #     else:
+        #         return False, "unknow container id."
+        # else:
+        #     return False, f"no running container {name} found."
 
     def parse_container_output(self, output, valid_arr):
         """
@@ -412,3 +426,35 @@ class Container():
                 result.append(line)
 
         return result
+
+    def __container_start_stop(self, mode, name, sleep):
+        """
+        """
+        if mode not in ["start", "restart", "stop"]:
+            return False, f"unknow mode ''{mode}'"
+
+        container = self.container_search(name)
+
+        if container:
+            container_id = container.get("Id", None)
+
+            self.module.log(f" = {mode} container with id {container_id}")
+
+            if container_id:
+                for container in self.docker_client.containers.list(all=True, filters={"id": container_id}):
+                    if mode == "stop":
+                        container.stop()
+                    elif mode == "start":
+                        container.start()
+                    else:
+                        container.restart()
+
+                    time.sleep(int(sleep))
+
+                return True, f'{mode} command completed successfully.'
+            else:
+                return False, "unknow container id."
+        else:
+            return False, f"no running container {name} found."
+
+

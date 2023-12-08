@@ -21,6 +21,7 @@ class FilterModule(object):
             'coremedia_ior_url': self.coremedia_ior_url,
             'sql_driver': self.sql_driver,
             'sql_dialect': self.sql_dialect,
+            'coremedia_mounts': self.coremedia_mounts,
         }
 
     def coremedia_applications(self, data):
@@ -141,3 +142,125 @@ class FilterModule(object):
             hostname += f".{domainname}"
 
         return f"http://{hostname}:{port}/ior"
+
+    def coremedia_mounts(self, data, coremedia_directory={}, need_mounts=[], append_mounts=[]):
+        """
+        """
+        _env = coremedia_directory.get("env", None)
+        _licenses = coremedia_directory.get("licenses", None)
+        _heapdumps = coremedia_directory.get("heapdumps", None)
+        _cache = coremedia_directory.get("cache", None)
+        _blobcache = coremedia_directory.get("blobcache", None)
+        _events_sitemap = coremedia_directory.get("events_sitemap", None)
+        _tmp = coremedia_directory.get("tmp", None)
+
+        result = []
+        part = {}
+
+        if data in ["content-management-server", "master-live-server", "replication-live-server"] and _licenses:
+            part.update(
+                source = _licenses,
+                target = "/coremedia/licenses/",
+                type = "bind",
+                read_only = True,
+            )
+
+            result.append(part)
+
+        if "prometheus" in need_mounts and _env:
+            result.append(
+                dict(
+                    source = f"{_env}/{data}/jmx_prometheus.yml",
+                    target = "/coremedia/prometheus/jmx_prometheus.yml",
+                    type = "bind",
+                    read_only = True,
+                    source_handling = dict(
+                      create = False,
+                      owner = "1000",
+                      group = "1000",
+                      mode = "0750",
+                    )
+                )
+            )
+
+        if "heapdumps" in need_mounts and _heapdumps:
+            result.append(
+                dict(
+                    source = f"{_heapdumps}/{data}",
+                    target = "/coremedia/heapdumps",
+                    type = "bind",
+                    read_only = False,
+                    source_handling = dict(
+                      create = True,
+                      owner = "1000",
+                      group = "1000",
+                      mode = "0770",
+                    )
+                )
+            )
+
+        if "cache" in need_mounts and _cache:
+            result.append(
+                dict(
+                    source = f"{_cache}/{data}",
+                    target = "/coremedia/cache",
+                    type = "bind",
+                    read_only = False,
+                    source_handling = dict(
+                      create = True,
+                      owner = "1000",
+                      group = "1000",
+                      mode = "0770",
+                    )
+                )
+            )
+
+        if "blobcache" in need_mounts and _blobcache:
+            result.append(
+                dict(
+                    source = f"{_blobcache}/{data}",
+                    target = "/coremedia/blobcache",
+                    type = "bind",
+                    read_only = False,
+                    source_handling = dict(
+                      create = True,
+                      owner = "1000",
+                      group = "1000",
+                      mode = "0770",
+                    )
+                )
+            )
+
+        if "events_sitemap" in need_mounts and _events_sitemap:
+            result.append(
+                dict(
+                    source = f"{_events_sitemap}/{data}",
+                    target = "/coremedia/eventsSitemap",
+                    type = "bind",
+                    read_only = False,
+                    source_handling = dict(
+                      create = True,
+                      owner = "1000",
+                      group = "1000",
+                      mode = "0770",
+                    )
+                )
+            )
+
+        if "tmp" in need_mounts and _tmp:
+            result.append(
+                dict(
+                    source = f"{_tmp}/{data}",
+                    target = "/coremedia/var/tmp",
+                    type = "bind",
+                    read_only = False,
+                    source_handling = dict(
+                      create = True,
+                      owner = "1000",
+                      group = "1000",
+                      mode = "0770",
+                    )
+                )
+            )
+
+        return result

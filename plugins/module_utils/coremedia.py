@@ -5,13 +5,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-# import os
-# import time
-# from contextlib import suppress
-# import docker
-# from docker.errors import DockerException
-# from docker.types import LogConfig
-
 from ansible_collections.bodsch.coremedia.plugins.module_utils.container import Container
 
 class Coremedia():
@@ -31,7 +24,6 @@ class Coremedia():
         """
         """
         pass
-
 
     def content_server_runlevel(self, management_container_image, content_server, admin_username, admin_password, ior):
         """
@@ -117,3 +109,11 @@ class Coremedia():
 
         return result
 
+    def container_stop(self, container_name):
+        pass
+
+    def container_start(self, container_name):
+        pass
+
+    def container_restart(self, container_name):
+        pass
