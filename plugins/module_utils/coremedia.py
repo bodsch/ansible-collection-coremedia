@@ -7,6 +7,7 @@ from __future__ import absolute_import, division, print_function
 
 from ansible_collections.bodsch.coremedia.plugins.module_utils.container import Container
 
+
 class Coremedia():
     """
     """

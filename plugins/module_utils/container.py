@@ -16,6 +16,7 @@ from docker.types import LogConfig
 class Container():
     """
     """
+
     def __init__(self, module):
         """
         """
@@ -405,8 +406,6 @@ class Container():
         #     container_id = container.get("Id", None)
         #
         #     self.module.log(f" = restart conatiner with id {container_id}")
-        #                    else:
-                        container.start()
         #     if container_id:
         #         for container in self.docker_client.containers.list(all=True, filters={"id": container_id}):
         #             container.restart()
@@ -456,5 +455,3 @@ class Container():
                 return False, "unknow container id."
         else:
             return False, f"no running container {name} found."
-
-

@@ -16,12 +16,12 @@ class FilterModule(object):
     def filters(self):
         return {
             'coremedia_applications': self.coremedia_applications,
-            'coremedia_container': self.coremedia_container,
-            'coremedia_dba_url': self.coremedia_dba_url,
-            'coremedia_ior_url': self.coremedia_ior_url,
+            'container_filter_by_name': self.container_filter_by_name,
+            'dba_url': self.dba_url,
+            'ior_url': self.ior_url,
             'sql_driver': self.sql_driver,
             'sql_dialect': self.sql_dialect,
-            'coremedia_mounts': self.coremedia_mounts,
+            'container_mounts': self.container_mounts,
         }
 
     def coremedia_applications(self, data):
@@ -37,13 +37,12 @@ class FilterModule(object):
 
         return result
 
-    def coremedia_container(self, data, container):
+    def container_filter_by_name(self, data, container):
         """
         :param data:
         :return:
         """
-        display.v(f"coremedia_container(self, data, {container})")
-        result = []
+        display.v(f"container_filter_by_name(self, data, {container})")
 
         container_names = [x.get("name") for x in data if x.get("name")]
         display.v(f" - found containers: {container_names}")
@@ -52,15 +51,6 @@ class FilterModule(object):
         display.v(f" = result: {filtered_values}")
 
         return filtered_values
-
-        # if container in container_names:
-        #     result = True
-        #     display.v(f" = result {container}: {result} {type(result)}")
-        #
-        # result = len([x for x in data if x.get("name") == container]) != 0
-        #
-        # display.v(f" = result {container}: {result} {type(result)}")
-        # return result
 
     def sql_dialect(self, db_type="mysql"):
         """
@@ -94,8 +84,9 @@ class FilterModule(object):
 
         return result
 
-    def coremedia_dba_url(self, db_type="mysql", db_endpoint="127.0.0.1", db_port="3306", db_schema="coremedia"):
+    def dba_url(self, db_type="mysql", db_endpoint="127.0.0.1", db_port="3306", db_schema="coremedia"):
         """
+            returns valid dba url for applications and various dba
         """
         result = None
 
@@ -113,12 +104,14 @@ class FilterModule(object):
             result = f"jdbc:sqlserver://{db_endpoint}:{db_port};databaseName={db_schema}"
         elif db_type == "oracle":
             # jdbc:oracle:thin:@localhost:1521:CM
-            result = "jdbc:oracle:thin:@{db_endpoint}:{db_port}:{db_schema}"
+            result = f"jdbc:oracle:thin:@{db_endpoint}:{db_port}:{db_schema}"
 
         return result
 
-    def coremedia_ior_url(self, cm_service, hostname, domainname, port):
+    def ior_url(self, cm_service, hostname, domainname, port):
         """
+            returns valid ior url for applications
+
           cms: "http://content-management-server.{{ coremedia_hosts_domain }}:40180/ior"
           mls: "http://master-live-server.{{ coremedia_hosts_domain }}:40280/ior"
           wfs: "http://workflow-server.{{ coremedia_hosts_domain }}:40380/ior"
@@ -143,8 +136,9 @@ class FilterModule(object):
 
         return f"http://{hostname}:{port}/ior"
 
-    def coremedia_mounts(self, data, coremedia_directory={}, need_mounts=[], append_mounts=[]):
+    def container_mounts(self, data, coremedia_directory={}, need_mounts=[], append_mounts=[]):
         """
+            return a list of dictionaries wirth mounts for coremedia applications
         """
         _env = coremedia_directory.get("env", None)
         _licenses = coremedia_directory.get("licenses", None)
@@ -159,10 +153,10 @@ class FilterModule(object):
 
         if data in ["content-management-server", "master-live-server", "replication-live-server"] and _licenses:
             part.update(
-                source = _licenses,
-                target = "/coremedia/licenses/",
-                type = "bind",
-                read_only = True,
+                source=_licenses,
+                target="/coremedia/licenses/",
+                type="bind",
+                read_only=True,
             )
 
             result.append(part)
@@ -170,15 +164,15 @@ class FilterModule(object):
         if "prometheus" in need_mounts and _env:
             result.append(
                 dict(
-                    source = f"{_env}/{data}/jmx_prometheus.yml",
-                    target = "/coremedia/prometheus/jmx_prometheus.yml",
-                    type = "bind",
-                    read_only = True,
-                    source_handling = dict(
-                      create = False,
-                      owner = "1000",
-                      group = "1000",
-                      mode = "0750",
+                    source=f"{_env}/{data}/jmx_prometheus.yml",
+                    target="/coremedia/prometheus/jmx_prometheus.yml",
+                    type="bind",
+                    read_only=True,
+                    source_handling=dict(
+                        create=False,
+                        owner="1000",
+                        group="1000",
+                        mode="0750",
                     )
                 )
             )
@@ -186,15 +180,15 @@ class FilterModule(object):
         if "heapdumps" in need_mounts and _heapdumps:
             result.append(
                 dict(
-                    source = f"{_heapdumps}/{data}",
-                    target = "/coremedia/heapdumps",
-                    type = "bind",
-                    read_only = False,
-                    source_handling = dict(
-                      create = True,
-                      owner = "1000",
-                      group = "1000",
-                      mode = "0770",
+                    source=f"{_heapdumps}/{data}",
+                    target="/coremedia/heapdumps",
+                    type="bind",
+                    read_only=False,
+                    source_handling=dict(
+                        create=True,
+                        owner="1000",
+                        group="1000",
+                        mode="0770",
                     )
                 )
             )
@@ -202,15 +196,15 @@ class FilterModule(object):
         if "cache" in need_mounts and _cache:
             result.append(
                 dict(
-                    source = f"{_cache}/{data}",
-                    target = "/coremedia/cache",
-                    type = "bind",
-                    read_only = False,
-                    source_handling = dict(
-                      create = True,
-                      owner = "1000",
-                      group = "1000",
-                      mode = "0770",
+                    source=f"{_cache}/{data}",
+                    target="/coremedia/cache",
+                    type="bind",
+                    read_only=False,
+                    source_handling=dict(
+                        create=True,
+                        owner="1000",
+                        group="1000",
+                        mode="0770",
                     )
                 )
             )
@@ -218,15 +212,15 @@ class FilterModule(object):
         if "blobcache" in need_mounts and _blobcache:
             result.append(
                 dict(
-                    source = f"{_blobcache}/{data}",
-                    target = "/coremedia/blobcache",
-                    type = "bind",
-                    read_only = False,
-                    source_handling = dict(
-                      create = True,
-                      owner = "1000",
-                      group = "1000",
-                      mode = "0770",
+                    source=f"{_blobcache}/{data}",
+                    target="/coremedia/blobcache",
+                    type="bind",
+                    read_only=False,
+                    source_handling=dict(
+                        create=True,
+                        owner="1000",
+                        group="1000",
+                        mode="0770",
                     )
                 )
             )
@@ -234,15 +228,15 @@ class FilterModule(object):
         if "events_sitemap" in need_mounts and _events_sitemap:
             result.append(
                 dict(
-                    source = f"{_events_sitemap}/{data}",
-                    target = "/coremedia/eventsSitemap",
-                    type = "bind",
-                    read_only = False,
-                    source_handling = dict(
-                      create = True,
-                      owner = "1000",
-                      group = "1000",
-                      mode = "0770",
+                    source=f"{_events_sitemap}/{data}",
+                    target="/coremedia/eventsSitemap",
+                    type="bind",
+                    read_only=False,
+                    source_handling=dict(
+                        create=True,
+                        owner="1000",
+                        group="1000",
+                        mode="0770",
                     )
                 )
             )
@@ -250,17 +244,96 @@ class FilterModule(object):
         if "tmp" in need_mounts and _tmp:
             result.append(
                 dict(
-                    source = f"{_tmp}/{data}",
-                    target = "/coremedia/var/tmp",
-                    type = "bind",
-                    read_only = False,
-                    source_handling = dict(
-                      create = True,
-                      owner = "1000",
-                      group = "1000",
-                      mode = "0770",
+                    source=f"{_tmp}/{data}",
+                    target="/coremedia/var/tmp",
+                    type="bind",
+                    read_only=False,
+                    source_handling=dict(
+                        create=True,
+                        owner="1000",
+                        group="1000",
+                        mode="0770",
                     )
                 )
+            )
+
+        if "state" in need_mounts and _env:
+            result.append(
+                dict(
+                    source=f"{_env}/{data}/state",
+                    target="/coremedia/state",
+                    type="bind",
+                    read_only=False,
+                    source_handling=dict(
+                        create=True,
+                        owner="1000",
+                        group="1000",
+                        mode="0770",
+                    )
+                )
+            )
+
+        if re.match('^solr.*', data) and "data" in need_mounts and _env:
+            result.append(
+                dict(
+                    source=f"{_env}/{data}/data",
+                    target="/var/solr",
+                    type="bind",
+                    read_only=False,
+                    source_handling=dict(
+                        create=True,
+                        owner="8983",
+                        group="8983",
+                    )
+                )
+            )
+
+        if re.match('^mongodb.*', data) and "data" in need_mounts and _env:
+            result.append(
+                dict(
+                    source=f"{_env}/{data}/data",
+                    target="/data/db",
+                    type="bind",
+                    read_only=False,
+                    source_handling=dict(
+                        create=True,
+                        owner="999",
+                    )
+                )
+            )
+
+        if re.match('^cadvisor.*', data) and "data" in need_mounts:
+            result.append(
+                dict(
+                    source="/",
+                    target="/rootfs",
+                    type="true",
+                    read_only=True,
+                ),
+                dict(
+                    source="/var/run",
+                    target="/var/run",
+                    type="true",
+                    read_only=True,
+                ),
+                dict(
+                    source="/sys",
+                    target="/sys",
+                    type="true",
+                    read_only=True,
+                ),
+                dict(
+                    source="/var/lib/docker",
+                    target="/var/lib/docker",
+                    type="true",
+                    read_only=True,
+                ),
+                dict(
+                    source="/dev/disk",
+                    target="/dev/disk",
+                    type="true",
+                    read_only=True,
+                ),
             )
 
         return result
