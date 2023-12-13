@@ -22,6 +22,7 @@ class FilterModule(object):
             'sql_driver': self.sql_driver,
             'sql_dialect': self.sql_dialect,
             'container_mounts': self.container_mounts,
+            'spring_configs': self.spring_configs,
         }
 
     def coremedia_applications(self, data):
@@ -136,9 +137,9 @@ class FilterModule(object):
 
         return f"http://{hostname}:{port}/ior"
 
-    def container_mounts(self, data, coremedia_directory={}, need_mounts=[], append_mounts=[]):
+    def container_mounts(self, data, coremedia_directory={}, application=None, need_mounts=[], append_mounts=[]):
         """
-            return a list of dictionaries wirth mounts for coremedia applications
+            return a lispring_configsst of dictionaries wirth mounts for coremedia applications
         """
         _env = coremedia_directory.get("env", None)
         _licenses = coremedia_directory.get("licenses", None)
@@ -336,4 +337,42 @@ class FilterModule(object):
                 ),
             )
 
+        properties = [x for x in need_mounts if re.search(".*.properties", x)]
+        if len(properties) > 0 and _env:
+            for i in properties:
+                source = f"{_env}/{data}/{i}"
+                if application:
+                    source = f"{_env}/{application}/{i}"
+                result.append(
+                    dict(
+                        source=source,
+                        target=f"/coremedia/properties/corem/{i}",
+                        type="bind",
+                        read_only=False,
+                        source_handling=dict(
+                            create=False,
+                            owner="1000",
+                            group="1000",
+                            mode="0750",
+                        )
+                    )
+                )
+
+        return result
+
+    def spring_configs(self, data, properties):
+        """
+        """
+        display.v(f"spring_configs(self, {data}, {properties})")
+
+        result = None
+        arr = []
+
+        for i in properties:
+            arr.append(f"file:./properties/corem/{i}")
+
+        if len(arr) > 0:
+            result = ",".join(arr)
+
+        display.v(f" = result: {result}")
         return result
