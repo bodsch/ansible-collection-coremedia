@@ -141,6 +141,8 @@ class FilterModule(object):
         """
             return a list of dictionaries with mounts for coremedia applications
         """
+        # display.v(f"container_mounts(self, {data}, {coremedia_directory}, {application}, {need_mounts}, {append_mounts})")
+
         _env = coremedia_directory.get("env", None)
         _licenses = coremedia_directory.get("licenses", None)
         _heapdumps = coremedia_directory.get("heapdumps", None)
@@ -308,31 +310,39 @@ class FilterModule(object):
                 dict(
                     source="/",
                     target="/rootfs",
-                    type="true",
+                    type="bind",
                     read_only=True,
                 ),
+            )
+            result.append(
                 dict(
                     source="/var/run",
                     target="/var/run",
-                    type="true",
+                    type="bind",
                     read_only=True,
                 ),
+            )
+            result.append(
                 dict(
                     source="/sys",
                     target="/sys",
-                    type="true",
+                    type="bind",
                     read_only=True,
                 ),
+            )
+            result.append(
                 dict(
                     source="/var/lib/docker",
                     target="/var/lib/docker",
-                    type="true",
+                    type="bind",
                     read_only=True,
                 ),
+            )
+            result.append(
                 dict(
                     source="/dev/disk",
                     target="/dev/disk",
-                    type="true",
+                    type="bind",
                     read_only=True,
                 ),
             )
@@ -357,6 +367,8 @@ class FilterModule(object):
                         )
                     )
                 )
+
+        # display.v(f" = result: {result}")
 
         return result
 
