@@ -139,7 +139,7 @@ class FilterModule(object):
 
     def container_mounts(self, data, coremedia_directory={}, application=None, need_mounts=[], append_mounts=[]):
         """
-            return a lispring_configsst of dictionaries wirth mounts for coremedia applications
+            return a list of dictionaries with mounts for coremedia applications
         """
         _env = coremedia_directory.get("env", None)
         _licenses = coremedia_directory.get("licenses", None)
