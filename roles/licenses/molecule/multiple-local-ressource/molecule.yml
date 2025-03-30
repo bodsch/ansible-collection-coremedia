@@ -13,7 +13,7 @@ lint: |
 
 platforms:
   - name: cms
-    image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
+    image: "ghcr.io/bodsch/docker-ansible/ansible-${DISTRIBUTION:-debian:11}"
     command: ${MOLECULE_DOCKER_COMMAND:-""}
     docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
     privileged: true
@@ -27,7 +27,7 @@ platforms:
       - content_server
 
   - name: mls
-    image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
+    image: "ghcr.io/bodsch/docker-ansible/ansible-${DISTRIBUTION:-debian:11}"
     command: ${MOLECULE_DOCKER_COMMAND:-""}
     docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
     privileged: true
@@ -41,7 +41,7 @@ platforms:
       - content_server
 
   - name: rls
-    image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
+    image: "ghcr.io/bodsch/docker-ansible/ansible-${DISTRIBUTION:-debian:11}"
     command: ${MOLECULE_DOCKER_COMMAND:-""}
     docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
     privileged: true
