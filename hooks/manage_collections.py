@@ -17,14 +17,21 @@ import site
 
 class AnsibleCollectionManager():
 
-    def __init__(self):
+    def __init__(self, directory: str = None, scenario: str = None):
         """
         """
-        self.args = {}
-        self.parse_args()
+        if directory or scenario:
+            self.run_directory = directory
+            self.tox_scenario = scenario
+        else:
+            self.args = {}
+            self.parse_args()
 
-        self.run_directory = self.args.directory
-        self.tox_scenario = self.args.scenario
+            self.run_directory = self.args.directory
+            self.tox_scenario = self.args.scenario
+
+        # print(self.run_directory)
+        # print(self.tox_scenario)
 
         self.requirements_file = "collections.yml"
 
@@ -58,18 +65,30 @@ class AnsibleCollectionManager():
     def run(self):
         """
         """
-        if not Path(self.requirements_file).exists():
-            print(f"❌ File '{self.requirements_file}' not found.")
-            return
+        required = []
 
-        required = self.load_required_collections(self.requirements_file)
+        if Path(self.requirements_file).exists():
+
+            print("role requirements:")
+            required += self.load_required_collections(self.requirements_file)
 
         if self.tox_scenario:
+            print("scenario requirements:")
             _file = os.path.join("molecule", self.tox_scenario, "requirements.yml")
             if os.path.exists(_file):
                 required += self.load_required_collections(_file)
 
+        if Path("galaxy.yml").exists():
+            """
+                eine collection
+            """
+            print("collection requirements:")
+            required += self.load_collection_dependencies()
+
         installed = self.get_installed_collections()
+
+        # print(required)
+        # print(type(required))
 
         for item in required:
             name = item.get("name")
@@ -101,6 +120,17 @@ class AnsibleCollectionManager():
             data = yaml.safe_load(f)
             if data and isinstance(data, dict):
                 result = data.get("collections", [])
+
+        return result
+
+    def load_collection_dependencies(self, path="galaxy.yml"):
+        """
+        """
+        with open(path, "r") as f:
+            data = yaml.safe_load(f)
+            if data and isinstance(data, dict):
+                r = data.get("dependencies", [])
+                result = [{"name": k, "version": v} if v is not None and v != "*" else {"name": k} for k, v in r.items()]
 
         return result
 
